@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Socratia Physics - Agen Pembimbing Sokratik Fisika</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            physics: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              800: '#075985',
+              900: '#0c4a6e',
+              950: '#082f49',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <!-- Marked.js for rendering AI Markdown responses cleanly -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    /* Custom Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.25);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(56, 189, 248, 0.5);
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 15px rgba(14, 165, 233, 0.2); }
+      50% { box-shadow: 0 0 25px rgba(14, 165, 233, 0.5); }
+    }
+    .pulse-glow {
+      animation: pulseGlow 3s infinite;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 font-sans h-screen flex flex-col overflow-hidden">
+
+  <header class="flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800 shrink-0 z-20">
+    <div class="flex items-center space-x-3">
+      <div class="p-2 bg-gradient-to-tr from-sky-600 to-indigo-600 rounded-xl shadow-lg shadow-sky-500/20 text-white flex items-center justify-center">
+        <i class="fa-solid fa-atom text-xl animate-spin" style="animation-duration: 12s;"></i>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <h1 class="font-bold text-base md:text-lg text-slate-100 tracking-tight">Socratia Physics</h1>
+          <span class="px-2 py-0.5 text-[10px] font-semibold tracking-wider text-sky-400 bg-sky-950/80 border border-sky-800/80 rounded-full uppercase">
+            Agen Sokratik
+          </span>
+        </div>
+        <p class="text-xs text-slate-400 hidden sm:block">Pembimbing Belajar Mahasiswa Pendidikan Fisika • Konstruktivisme & HOTS</p>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-2 sm:space-x-3">
+      <!-- Voice Audio Synthesis Toggle -->
+      <button id="toggle-speech-btn" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 transition-all">
+        <i id="speech-icon" class="fa-solid fa-volume-xmark text-slate-400"></i>
+        <span id="speech-status-text" class="hidden md:inline">Suara Mute</span>
+      </button>
+
+      <!-- Clear Session Button -->
+      <button id="reset-session-btn" class="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition-colors border border-slate-700">
+        <i class="fa-solid fa-rotate-right"></i>
+        <span class="hidden md:inline">Riset Sesi</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- LEFT PANEL: Socratic Dialogue / Chat Engine -->
+    <main class="flex-1 flex flex-col bg-slate-950 border-r border-slate-800/80 relative">
+      
+      <!-- Cognitive Conflict / Miskonsepsi Banner Alert -->
+      <div id="cognitive-conflict-alert" class="hidden bg-amber-950/80 border-b border-amber-700/60 px-4 py-2.5 flex items-center justify-between text-amber-300 text-xs animate-fade-in z-10 shrink-0">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-bolt text-amber-400 animate-bounce"></i>
+          <span><strong>Cognitive Conflict Aktif:</strong> Agen sedang memicu eksperimen pikiran untuk menguji ulang intuisimu!</span>
+        </div>
+        <button id="close-alert-btn" class="text-amber-400 hover:text-amber-200 text-sm pl-2">&times;</button>
+      </div>
+
+      <!-- Quick Preset Topics Bar -->
+      <div class="bg-slate-900/60 px-4 py-2 border-b border-slate-800/60 flex items-center space-x-2 overflow-x-auto whitespace-nowrap scrollbar-none shrink-0">
+        <span class="text-[11px] text-slate-400 font-medium flex items-center space-x-1.5 shrink-0">
+          <i class="fa-solid fa-compass text-sky-400"></i>
+          <span>Topik Pemantik:</span>
+        </span>
+        <button class="preset-btn text-[11px] bg-slate-800/80 hover:bg-slate-700/90 text-sky-300 border border-slate-700/80 rounded-full px-3 py-1 transition-all" data-question="Mengapa gaya gesek kinetis hampir selalu lebih kecil daripada gaya gesek statis maksimum pada permukaan yang sama?">
+          Mekanika: Gesekan Statis vs Kinetis
+        </button>
+        <button class="preset-btn text-[11px] bg-slate-800/80 hover:bg-slate-700/90 text-sky-300 border border-slate-700/80 rounded-full px-3 py-1 transition-all" data-question="Mengapa burung yang hinggap di kabel listrik bertegangan tinggi tidak tersengat listrik?">
+          Listrik: Beda Potensial Burung
+        </button>
+        <button class="preset-btn text-[11px] bg-slate-800/80 hover:bg-slate-700/90 text-sky-300 border border-slate-700/80 rounded-full px-3 py-1 transition-all" data-question="Jika kita membuka pintu kulkas yang menyala di ruangan tertutup rapat, apakah suhu ruangan akan menjadi dingin atau memanas dalam jangka panjang?">
+          Termo: Pintu Kulkas Terbuka
+        </button>
+        <button class="preset-btn text-[11px] bg-slate-800/80 hover:bg-slate-700/90 text-sky-300 border border-slate-700/80 rounded-full px-3 py-1 transition-all" data-question="Mengapa efek fotolistrik tidak dapat dijelaskan dengan teori gelombang cahaya klasik?">
+          Fisika Modern: Efek Fotolistrik
+        </button>
+      </div>
+
+      <!-- Chat History Box -->
+      <div id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4">
+        <!-- Dynamic message elements will be injected here via JavaScript -->
+      </div>
+
+      <!-- Metacognitive Prompt Shortcut Bar -->
+      <div class="px-3 py-2 bg-slate-900/40 border-t border-slate-800/60 flex items-center space-x-2 overflow-x-auto text-xs shrink-0">
+        <span class="text-[10px] text-slate-500 font-medium shrink-0">Bantuan Metakognitif:</span>
+        <button class="meta-prompt-btn shrink-0 bg-amber-950/40 hover:bg-amber-900/50 text-amber-300 border border-amber-600/30 px-2.5 py-1 rounded-lg transition-colors flex items-center space-x-1 text-[11px]" data-prompt="Saya merasa sedikit bingung dengan variabel fisika dalam topik ini. Bisakah Anda memberi saya eksperimen pikiran (thought experiment) sederhana untuk memandu saya?">
+          <i class="fa-regular fa-lightbulb"></i>
+          <span>Minta Eksperimen Pikiran</span>
+        </button>
+        <button class="meta-prompt-btn shrink-0 bg-sky-950/40 hover:bg-sky-900/50 text-sky-300 border border-sky-600/30 px-2.5 py-1 rounded-lg transition-colors flex items-center space-x-1 text-[11px]" data-prompt="Bisakah kita meninjau konsep ini menggunakan analogi peristiwa sehari-hari untuk membantu saya membangun intuisi fisika saya?">
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>Beri Analogi Kehidupan Nyata</span>
+        </button>
+        <button class="meta-prompt-btn shrink-0 bg-rose-950/40 hover:bg-rose-900/50 text-rose-300 border border-rose-600/30 px-2.5 py-1 rounded-lg transition-colors flex items-center space-x-1 text-[11px]" data-prompt="Tantang pemahaman saya dengan memberikan skenario batas (extreme boundary case) atau situasi di mana asumsi fisika umum tampaknya gagal!">
+          <i class="fa-solid fa-fire"></i>
+          <span>Tantang Asumsi Saya</span>
+        </button>
+      </div>
+
+      <!-- Input Bar Form -->
+      <div class="p-3 bg-slate-900 border-t border-slate-800 shrink-0">
+        <form id="chat-form" class="flex items-center space-x-2">
+          <!-- Voice Input Button -->
+          <button type="button" id="mic-btn" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all shrink-0" title="Input Suara (Speech Recognition)">
+            <i class="fa-solid fa-microphone text-sm"></i>
+          </button>
+
+          <!-- Main Input Textarea/Input -->
+          <input
+            type="text"
+            id="user-input"
+            placeholder="Tuliskan analisis, argumen, atau dugaan konseptual fisika Anda..."
+            class="flex-1 bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition-all"
+            autocomplete="off"
+          />
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            id="send-btn"
+            class="p-2.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white rounded-xl transition-all shadow-md shadow-sky-500/20 shrink-0 disabled:opacity-50"
+          >
+            <i class="fa-solid fa-paper-plane text-sm"></i>
+          </button>
+        </form>
+        <p class="text-[10px] text-slate-500 mt-1.5 text-center">
+          *Agen Sokratik dikonfigurasi tidak memberikan solusi langsung untuk memicu konstruktivisme dan pemikiran HOTS.
+        </p>
+      </div>
+    </main>
+
+    <aside class="w-80 lg:w-96 bg-slate-900 flex flex-col border-l border-slate-800 hidden md:flex shrink-0">
+      
+      <!-- Workspace Navigation Tabs -->
+      <div class="flex border-b border-slate-800 bg-slate-950/80 p-1.5 shrink-0">
+        <button id="tab-scratchpad-btn" class="tab-btn flex-1 py-1.5 px-2 text-xs font-medium rounded-lg transition-all bg-slate-800 text-sky-400 shadow-sm flex items-center justify-center space-x-1.5" data-tab="scratchpad">
+          <i class="fa-solid fa-pen-ruler"></i>
+          <span>Papan Sketsa</span>
+        </button>
+        <button id="tab-notes-btn" class="tab-btn flex-1 py-1.5 px-2 text-xs font-medium rounded-lg transition-all text-slate-400 hover:text-slate-200 flex items-center justify-center space-x-1.5" data-tab="notes">
+          <i class="fa-solid fa-book-bookmark"></i>
+          <span>Refleksi</span>
+        </button>
+        <button id="tab-hots-btn" class="tab-btn flex-1 py-1.5 px-2 text-xs font-medium rounded-lg transition-all text-slate-400 hover:text-slate-200 flex items-center justify-center space-x-1.5" data-tab="hots">
+          <i class="fa-solid fa-chart-line"></i>
+          <span>HOTS</span>
+        </button>
+      </div>
+
+      <!-- TAB CONTENT 1: Scratchpad Canvas -->
+      <div id="tab-scratchpad" class="tab-content flex-1 p-3 flex flex-col space-y-2 overflow-hidden">
+        <div class="flex items-center justify-between pb-1 border-b border-slate-800/80">
+          <span class="text-xs text-slate-300 font-medium flex items-center space-x-1.5">
+            <i class="fa-solid fa-pencil text-sky-400"></i>
+            <span>Diagram Gaya & Vektor Canvas</span>
+          </span>
+          <div class="flex items-center space-x-1">
+            <button id="clear-canvas-btn" class="p-1 text-slate-400 hover:text-rose-400 transition-colors text-xs" title="Bersihkan Papan Canvas">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Drawing Controls -->
+        <div class="flex items-center justify-between bg-slate-950/60 p-2 rounded-lg border border-slate-800 text-xs">
+          <div class="flex items-center space-x-1.5">
+            <button class="color-picker w-5 h-5 rounded-full border-2 border-sky-400 scale-110" style="background-color: #38bdf8;" data-color="#38bdf8"></button>
+            <button class="color-picker w-5 h-5 rounded-full border border-slate-700" style="background-color: #f43f5e;" data-color="#f43f5e"></button>
+            <button class="color-picker w-5 h-5 rounded-full border border-slate-700" style="background-color: #10b981;" data-color="#10b981"></button>
+            <button class="color-picker w-5 h-5 rounded-full border border-slate-700" style="background-color: #f59e0b;" data-color="#f59e0b"></button>
+            <button class="color-picker w-5 h-5 rounded-full border border-slate-700" style="background-color: #f8fafc;" data-color="#f8fafc"></button>
+          </div>
+          <div class="flex items-center space-x-2 text-slate-400 text-[11px]">
+            <span>Ketebalan:</span>
+            <input id="stroke-width" type="range" min="1" max="8" value="3" class="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer" />
+          </div>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="flex-1 bg-slate-950 rounded-xl border border-slate-800 overflow-hidden relative cursor-crosshair">
+          <canvas id="scratchpad-canvas" class="w-full h-full block"></canvas>
+          <div class="absolute bottom-2 left-2 pointer-events-none text-[10px] text-slate-500 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-800">
+            Gunakan mouse/sentuhan untuk sketsa diagram
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB CONTENT 2: Reflection Notes -->
+      <div id="tab-notes" class="tab-content flex-1 p-3 flex-col space-y-3 hidden overflow-y-auto">
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+          <div class="flex items-center space-x-2 text-xs text-sky-400 font-medium">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span>Pedoman Dialog Sokratik</span>
+          </div>
+          <ul class="text-[11px] text-slate-400 space-y-1.5 pl-4 list-disc">
+            <li><strong>Temukan Sendiri:</strong> Agen tidak memberikan rumus instan, melainkan menanyakan hubungan variabel.</li>
+            <li><strong>Evaluasi Hipotesis:</strong> Gunakan catatan ini untuk merumuskan hukum fisika dengan bahasa Anda sendiri.</li>
+          </ul>
+        </div>
+
+        <div class="flex-1 flex flex-col bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2 min-h-[220px]">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-medium text-slate-300 flex items-center space-x-1.5">
+              <i class="fa-regular fa-file-lines text-indigo-400"></i>
+              <span>Catatan Refleksi & Sintesis Konsep</span>
+            </label>
+            <span id="save-status" class="text-[10px] text-slate-500">Tersimpan lokal</span>
+          </div>
+          <textarea
+            id="student-notes"
+            placeholder="Tuliskan temuan penting, hubungan variabel yang berhasil Anda kumpulkan, atau pertanyaan pribadi Anda di sini..."
+            class="flex-1 w-full bg-slate-900 border border-slate-800 focus:border-indigo-500 rounded-lg p-2.5 text-xs text-slate-200 placeholder-slate-600 outline-none resize-none leading-relaxed"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- TAB CONTENT 3: HOTS Level Tracker -->
+      <div id="tab-hots" class="tab-content flex-1 p-4 space-y-4 hidden overflow-y-auto">
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-300">Level Kedalaman Berpikir (HOTS)</span>
+            <span id="hots-badge" class="text-xs font-bold text-sky-400 bg-sky-950 px-2 py-0.5 rounded border border-sky-800">
+              Level 1 (C3)
+            </span>
+          </div>
+
+          <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+            <div id="hots-progress-bar" class="bg-gradient-to-r from-sky-500 to-indigo-500 h-full w-1/4 transition-all duration-500"></div>
+          </div>
+
+          <div class="space-y-2 pt-2">
+            <div id="hots-step-1" class="p-2.5 rounded-lg border text-xs bg-slate-900 border-sky-500/40 text-slate-200">
+              <div class="flex items-center space-x-2 font-medium">
+                <i class="fa-solid fa-circle-check text-sky-400"></i>
+                <span>C3 - Mengaplikasikan</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1 pl-5 leading-tight">Menghubungkan konsep teoritis dengan fenomena dasar fisika.</p>
+            </div>
+
+            <div id="hots-step-2" class="p-2.5 rounded-lg border text-xs bg-slate-950 border-slate-800/60 text-slate-600">
+              <div class="flex items-center space-x-2 font-medium">
+                <i id="hots-icon-2" class="fa-regular fa-circle text-slate-600"></i>
+                <span>C4 - Menganalisis</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1 pl-5 leading-tight">Membedah hubungan antar-variabel fisika dan sebab-akibat.</p>
+            </div>
+
+            <div id="hots-step-3" class="p-2.5 rounded-lg border text-xs bg-slate-950 border-slate-800/60 text-slate-600">
+              <div class="flex items-center space-x-2 font-medium">
+                <i id="hots-icon-3" class="fa-regular fa-circle text-slate-600"></i>
+                <span>C5 - Mengevaluasi</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1 pl-5 leading-tight">Mendeteksi kontradiksi logis & menguji batas keabsahan teori.</p>
+            </div>
+
+            <div id="hots-step-4" class="p-2.5 rounded-lg border text-xs bg-slate-950 border-slate-800/60 text-slate-600">
+              <div class="flex items-center space-x-2 font-medium">
+                <i id="hots-icon-4" class="fa-regular fa-circle text-slate-600"></i>
+                <span>C6 - Mencipta</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1 pl-5 leading-tight">Merumuskan kesimpulan mandiri & model penjelasan fisika baru.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-indigo-950/40 p-3.5 rounded-xl border border-indigo-900/60 space-y-1.5">
+          <div class="flex items-center space-x-2 text-indigo-300 text-xs font-medium">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Catatan Pembimbing AI</span>
+          </div>
+          <p class="text-[11px] text-slate-400 leading-relaxed">
+            Metode Sokratik memfasilitasi konstruktivisme kognitif. Saat Anda tertantang oleh pertanyaan reflektif, pemahaman konseptual fisika Anda sedang terbentuk secara mandiri dan bertahan lebih lama.
+          </p>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="p-2.5 bg-slate-950 border-t border-slate-800 text-center shrink-0">
+        <p class="text-[10px] text-slate-500">
+          Laboratorium Pembelajaran Fisika • Agent Gemini 3 Flash
+        </p>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Toast Notification Modal Container -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <script>
+    
+    // STRICT SOCRATIC AGENT SYSTEM INSTRUCTIONS
+    const SYSTEM_INSTRUCTION = `Anda adalah Agen Sokratik Pembimbing Belajar Mahasiswa Pendidikan Fisika.
+Tugas utama Anda adalah membimbing mahasiswa memahami konsep fisika secara mandiri, sistematis, serta melatih keterampilan berpikir tingkat tinggi (HOTS) tanpa pernah memberikan jawaban akhir secara langsung.
+
+ATURAN PERILAKU KETAT:
+1. DILARANG MEMBERI JAWABAN LANGSUNG: Jangan pernah menyajikan solusi, jawaban hitungan, rumus akhir, atau derivasi instan di awal.
+2. PRINSIP DIALOG SOKRATIK: Selalu jawab pertanyaan atau respon pengguna dengan pertanyaan reflektif baru yang memancing mereka mengingat kembali teori dasar, membedah definisi fisika, atau menganalisis logika mereka sendiri.
+3. VALIDASI EMPATIS: Mulai respon dengan memvalidasi intuisi atau usaha pengguna (misal: "Intuisi yang menarik...", "Dapat dipahami mengapa Anda berpikir demikian...", "Langkah pemikiran yang bagus dalam menghubungkan variabel tersebut...").
+4. ATURAN SATU PERTANYAAN (SINGLE-FOCUS QUESTION): Ajukan maksimal 1–2 pertanyaan saja di akhir setiap respon agar tidak membebani kapasitas kognitif pengguna.
+5. PENANGANAN MISKONSEPSI: Jika pengguna salah, jangan langsung menyalahkannya. Buat skenario kontradiksi logis berbasis contoh kehidupan nyata atau eksperimen pikiran (cognitive conflict) agar mereka menyadari kesalahannya sendiri.
+6. NADA BICARA: Akademis, hangat, ingin tahu, suportif, dan mendorong pemikiran tingkat tinggi (HOTS).
+7. BAHASA: Gunakan Bahasa Indonesia akademis yang ramah dan komunikatif.`;
+
+    // State Variables
+    let messageHistory = [];
+    let isLoading = false;
+    let isSpeechEnabled = false;
+    let isListening = false;
+    let currentHotsLevel = 1;
+    let currentColor = '#38bdf8';
+    let currentLineWidth = 3;
+
+    // DOM Elements
+    const chatContainer = document.getElementById('chat-container');
+    const chatForm = document.getElementById('chat-form');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
+    const micBtn = document.getElementById('mic-btn');
+    const speechToggleBtn = document.getElementById('toggle-speech-btn');
+    const speechIcon = document.getElementById('speech-icon');
+    const speechStatusText = document.getElementById('speech-status-text');
+    const resetSessionBtn = document.getElementById('reset-session-btn');
+    const cognitiveAlert = document.getElementById('cognitive-conflict-alert');
+    const closeAlertBtn = document.getElementById('close-alert-btn');
+    const studentNotes = document.getElementById('student-notes');
+    const saveStatus = document.getElementById('save-status');
+
+    async function callGeminiSocratic(messagesHistory) {
+      const apiKey = ""; // API key managed dynamically in runtime canvas environment
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const formattedContents = messagesHistory.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }]
+      }));
+
+      const payload = {
+        contents: formattedContents,
+        systemInstruction: {
+          parts: [{ text: SYSTEM_INSTRUCTION }]
+        }
+      };
+
+      let retries = 0;
+      const maxRetries = 3;
+      let delay = 1000;
+
+      while (retries < maxRetries) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP Error Status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) return text;
+          throw new Error("Respon kosong dari Gemini API.");
+        } catch (error) {
+          retries++;
+          if (retries >= maxRetries) {
+            throw error;
+          }
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2;
+        }
+      }
+    }
+
+    function renderMessage(sender, text, timestamp = null) {
+      const timeStr = timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`;
+
+      const isUser = sender === 'user';
+      
+      const parsedText = isUser ? escapeHtml(text) : marked.parse(text);
+
+      msgDiv.innerHTML = `
+        <div class="flex max-w-[88%] md:max-w-[80%] ${isUser ? 'flex-row-reverse space-x-reverse' : 'flex-row'} space-x-3">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
+            isUser 
+              ? 'bg-indigo-600 text-white' 
+              : 'bg-gradient-to-tr from-sky-600 to-indigo-600 text-white shadow-md'
+          }">
+            <i class="${isUser ? 'fa-solid fa-user-graduate' : 'fa-solid fa-brain'} text-xs"></i>
+          </div>
+
+          <div>
+            <div class="p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${
+              isUser
+                ? 'bg-indigo-600 text-white rounded-tr-none'
+                : 'bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-none space-y-2'
+            }">
+              ${!isUser ? `
+                <div class="flex items-center justify-between pb-1 mb-1 border-b border-slate-800/80 text-[11px] text-sky-400 font-medium">
+                  <span>Agen Pembimbing Sokratik</span>
+                  <span class="text-[10px] text-slate-500">${timeStr}</span>
+                </div>
+              ` : ''}
+
+              <div class="markdown-body font-sans text-xs sm:text-sm">
+                ${parsedText}
+              </div>
+            </div>
+
+            ${isUser ? `
+              <div class="text-[10px] text-slate-500 text-right mt-1 px-1">
+                ${timeStr}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+
+      chatContainer.appendChild(msgDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function renderLoadingIndicator() {
+      const loadingDiv = document.createElement('div');
+      loadingDiv.id = 'loading-indicator';
+      loadingDiv.className = 'flex justify-start items-center space-x-3';
+      loadingDiv.innerHTML = `
+        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-sky-600 to-indigo-600 flex items-center justify-center text-white">
+          <i class="fa-solid fa-brain animate-spin text-xs"></i>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 px-4 py-3 rounded-2xl rounded-tl-none text-xs text-sky-400 flex items-center space-x-2">
+          <span class="inline-block w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+          <span>Agen Sokratik sedang menyusun pertanyaan reflektif...</span>
+        </div>
+      `;
+      chatContainer.appendChild(loadingDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function removeLoadingIndicator() {
+      const el = document.getElementById('loading-indicator');
+      if (el) el.remove();
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    async function handleSendMessage(customText = null) {
+      const text = customText || userInput.value.trim();
+      if (!text || isLoading) return;
+
+      if (!customText) userInput.value = '';
+
+      // Append user message
+      messageHistory.push({ sender: 'user', text: text });
+      renderMessage('user', text);
+
+      isLoading = true;
+      sendBtn.disabled = true;
+      renderLoadingIndicator();
+
+      // Dynamically calculate HOTS progress based on depth of turns
+      updateHotsProgress();
+
+      try {
+        const responseText = await callGeminiSocratic(messageHistory);
+        removeLoadingIndicator();
+
+        messageHistory.push({ sender: 'agent', text: responseText });
+        renderMessage('agent', responseText);
+
+        // Speech synthesis if enabled
+        speakText(responseText);
+
+        // Check for cognitive conflict triggers in text
+        if (responseText.toLowerCase().includes("eksperimen pikiran") || responseText.toLowerCase().includes("kontradiksi") || responseText.toLowerCase().includes("membenturkan")) {
+          cognitiveAlert.classList.remove('hidden');
+        }
+
+      } catch (err) {
+        removeLoadingIndicator();
+        showToast("Gagal menghubungkan ke Agen Sokratik. Coba beberapa saat lagi.", "error");
+        renderMessage('agent', 'Maaf, terjadi kendala sinyal jaringan. Mari kita coba tinjau kembali poin pertanyaan terakhir Anda.');
+      } finally {
+        isLoading = false;
+        sendBtn.disabled = false;
+      }
+    }
+
+    function speakText(text) {
+      if (!isSpeechEnabled || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      
+      const cleanText = text.replace(/[*_#`]/g, '');
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = 'id-ID';
+      utterance.rate = 0.95;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    speechToggleBtn.addEventListener('click', () => {
+      isSpeechEnabled = !isSpeechEnabled;
+      if (isSpeechEnabled) {
+        speechIcon.className = 'fa-solid fa-volume-high text-emerald-400';
+        speechToggleBtn.className = 'flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-950/80 border border-emerald-800 text-emerald-400 transition-all';
+        speechStatusText.innerText = 'Suara Aktif';
+        showToast("Sintesis Suara Agen Aktif");
+      } else {
+        window.speechSynthesis.cancel();
+        speechIcon.className = 'fa-solid fa-volume-xmark text-slate-400';
+        speechToggleBtn.className = 'flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700 transition-all';
+        speechStatusText.innerText = 'Suara Mute';
+      }
+    });
+
+    // Voice Input (Speech-to-Text)
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'id-ID';
+      recognition.interimResults = false;
+
+      micBtn.addEventListener('click', () => {
+        if (isListening) {
+          recognition.stop();
+        } else {
+          recognition.start();
+        }
+      });
+
+      recognition.onstart = () => {
+        isListening = true;
+        micBtn.className = 'p-2.5 rounded-xl bg-rose-600 text-white border border-rose-500 animate-pulse shrink-0';
+        showToast("Mendengarkan suara Anda...");
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        userInput.value = userInput.value ? `${userInput.value} ${transcript}` : transcript;
+      };
+
+      recognition.onerror = () => {
+        isListening = false;
+        micBtn.className = 'p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all shrink-0';
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        micBtn.className = 'p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all shrink-0';
+      };
+    } else {
+      micBtn.style.display = 'none';
+    }
+
+    function initApp() {
+      // Setup initial greeting message
+      const initialGreeting = "Halo! Selamat datang di Ruang Pembimbingan Sokratik Fisika.\n\nSaya adalah Agen AI Sokratik Anda. Tugas saya bukan untuk langsung memberikan rumus atau jawaban hitung cepat, melainkan memandu Anda menemukan struktur logika fisika secara mandiri.\n\n**Topik, konsep, atau masalah fisika apa yang ingin kita bedah bersama hari ini?**";
+      
+      messageHistory = [{ sender: 'agent', text: initialGreeting }];
+      renderMessage('agent', initialGreeting);
+
+      // Restore saved notes
+      const savedNoteData = localStorage.getItem('socratic_physics_notes');
+      if (savedNoteData) studentNotes.value = savedNoteData;
+    }
+
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleSendMessage();
+    });
+
+    // Event Delegation for Preset Topics
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const q = btn.getAttribute('data-question');
+        handleSendMessage(q);
+      });
+    });
+
+    // Event Delegation for Metacognitive Prompts
+    document.querySelectorAll('.meta-prompt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = btn.getAttribute('data-prompt');
+        handleSendMessage(p);
+      });
+    });
+
+    // Reset Session Button
+    resetSessionBtn.addEventListener('click', () => {
+      chatContainer.innerHTML = '';
+      messageHistory = [];
+      currentHotsLevel = 1;
+      updateHotsUI();
+      cognitiveAlert.classList.add('hidden');
+      initApp();
+      showToast("Sesi diskusi Sokratik telah diperbarui.");
+    });
+
+    closeAlertBtn.addEventListener('click', () => {
+      cognitiveAlert.classList.add('hidden');
+    });
+
+    // Notes auto-save
+    studentNotes.addEventListener('input', () => {
+      localStorage.setItem('socratic_physics_notes', studentNotes.value);
+      saveStatus.innerText = 'Tersimpan';
+      setTimeout(() => { saveStatus.innerText = 'Tersimpan lokal'; }, 2000);
+    });
+
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.getAttribute('data-tab');
+
+        tabBtns.forEach(b => {
+          b.className = 'tab-btn flex-1 py-1.5 px-2 text-xs font-medium rounded-lg transition-all text-slate-400 hover:text-slate-200 flex items-center justify-center space-x-1.5';
+        });
+        btn.className = 'tab-btn flex-1 py-1.5 px-2 text-xs font-medium rounded-lg transition-all bg-slate-800 text-sky-400 shadow-sm flex items-center justify-center space-x-1.5';
+
+        tabContents.forEach(content => {
+          if (content.id === `tab-${targetTab}`) {
+            content.classList.remove('hidden');
+            content.classList.add('flex');
+          } else {
+            content.classList.add('hidden');
+            content.classList.remove('flex');
+          }
+        });
+
+        if (targetTab === 'scratchpad') {
+          resizeCanvas();
+        }
+      });
+    });
+
+    const canvas = document.getElementById('scratchpad-canvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * 2;
+      canvas.height = rect.height * 2;
+      ctx.scale(2, 2);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = currentLineWidth;
+    }
+
+    function startDrawing(e) {
+      isDrawing = true;
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
+      const y = (e.clientY || e.touches?.[0]?.clientY) - rect.top;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX || e.touches?.[0]?.clientX) - rect.left;
+      const y = (e.clientY || e.touches?.[0]?.clientY) - rect.top;
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    }
+
+    function stopDrawing() {
+      isDrawing = false;
+    }
+
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
+
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+    canvas.addEventListener('touchend', stopDrawing);
+
+    document.querySelectorAll('.color-picker').forEach(picker => {
+      picker.addEventListener('click', () => {
+        document.querySelectorAll('.color-picker').forEach(p => p.classList.remove('ring-2', 'ring-sky-400', 'scale-110'));
+        picker.classList.add('ring-2', 'ring-sky-400', 'scale-110');
+        currentColor = picker.getAttribute('data-color');
+        ctx.strokeStyle = currentColor;
+      });
+    });
+
+    document.getElementById('stroke-width').addEventListener('input', (e) => {
+      currentLineWidth = e.target.value;
+      ctx.lineWidth = currentLineWidth;
+    });
+
+    document.getElementById('clear-canvas-btn').addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      showToast("Papan Sketsa Dibersihkan");
+    });
+
+    function updateHotsProgress() {
+      const userMsgCount = messageHistory.filter(m => m.sender === 'user').length;
+      if (userMsgCount >= 5) currentHotsLevel = 4;
+      else if (userMsgCount >= 3) currentHotsLevel = 3;
+      else if (userMsgCount >= 2) currentHotsLevel = 2;
+      else currentHotsLevel = 1;
+
+      updateHotsUI();
+    }
+
+    function updateHotsUI() {
+      const badge = document.getElementById('hots-badge');
+      const progressBar = document.getElementById('hots-progress-bar');
+      
+      const levelNames = ["Level 1 (C3)", "Level 2 (C4)", "Level 3 (C5)", "Level 4 (C6)"];
+      badge.innerText = levelNames[currentHotsLevel - 1];
+      progressBar.style.width = `${(currentHotsLevel / 4) * 100}%`;
+
+      for (let i = 1; i <= 4; i++) {
+        const stepEl = document.getElementById(`hots-step-${i}`);
+        const iconEl = document.getElementById(`hots-icon-${i}`);
+
+        if (i <= currentHotsLevel) {
+          stepEl.className = 'p-2.5 rounded-lg border text-xs bg-slate-900 border-sky-500/40 text-slate-200';
+          if (iconEl) iconEl.className = 'fa-solid fa-circle-check text-sky-400';
+        } else {
+          stepEl.className = 'p-2.5 rounded-lg border text-xs bg-slate-950 border-slate-800/60 text-slate-600';
+          if (iconEl) iconEl.className = 'fa-regular fa-circle text-slate-600';
+        }
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `px-4 py-2.5 rounded-xl shadow-xl text-xs font-medium text-white flex items-center space-x-2 transition-all transform translate-y-2 opacity-0 pointer-events-auto ${
+        type === 'error' ? 'bg-rose-600' : 'bg-sky-600'
+      }`;
+      toast.innerHTML = `
+        <i class="${type === 'error' ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-circle-info'}"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Window Load Initialization
+    window.addEventListener('load', () => {
+      initApp();
+      setTimeout(resizeCanvas, 200);
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+</body>
+</html>
